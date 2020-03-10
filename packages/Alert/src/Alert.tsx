@@ -13,6 +13,7 @@ import {
   CheckCircleIcon,
   WarningIcon,
 } from "@chakra-ui/icon-glyphs"
+import { createContext } from "@chakra-ui/utils"
 
 export const statuses = {
   info: { icon: InfoIcon, color: "blue" },
@@ -21,14 +22,9 @@ export const statuses = {
   error: { icon: WarningIcon, color: "red" },
 }
 
-const AlertContext = React.createContext<AlertContextValue>({
-  status: "success",
-  variant: "solid",
-})
+type AlertContext = Required<AlertOptions>
 
-const useAlertContext = () => React.useContext(AlertContext)
-
-type AlertContextValue = Required<AlertOptions>
+const [AlertContextProvider, useAlertContext] = createContext<AlertContext>()
 
 export interface AlertOptions {
   /**
@@ -41,9 +37,17 @@ export interface AlertOptions {
   variant?: "subtle" | "solid" | "left-accent" | "top-accent"
 }
 
-export type AlertProps = PropsOf<typeof AlertRoot> & AlertOptions
+export type AlertProps = PropsOf<typeof StyledAlert> & AlertOptions
 
-const AlertRoot = createChakra("div", { themeKey: "Alert" })
+const StyledAlert = createChakra("div", {
+  themeKey: "Alert.Root",
+  baseStyle: {
+    display: "flex",
+    alignItems: "center",
+    position: "relative",
+    overflow: "hidden",
+  },
+})
 
 const Alert = forwardRef((props: AlertProps, ref: React.Ref<any>) => {
   const { status = "info", variant = "subtle", ...rest } = props
@@ -51,26 +55,27 @@ const Alert = forwardRef((props: AlertProps, ref: React.Ref<any>) => {
 
   const context = { status, variant }
   return (
-    <AlertContext.Provider value={context}>
-      <AlertRoot
+    <AlertContextProvider value={context}>
+      <StyledAlert
         ref={ref}
         role="alert"
         variant={variant}
         {...rest}
         variantColor={variantColor}
       />
-    </AlertContext.Provider>
+    </AlertContextProvider>
   )
 })
 
 const AlertTitle = createChakra("div", {
+  themeKey: "Alert.Title",
   baseStyle: {
     fontWeight: "bold",
     lineHeight: "normal",
   },
 })
 
-const AlertDescription = createChakra("div")
+const AlertDescription = createChakra("div", { themeKey: "Alert.Description" })
 
 const AlertIcon = (props: IconProps) => {
   const [colorMode] = useColorMode()
